@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .center {
+    @apply flex justify-center items-center;
+  }
+  .neuo {
+    border-radius: 35px;
+    background: #ffffff;
+    box-shadow: 35px 35px 69px #e6e6e6, -35px -35px 69px #ffffff;
+  }
+}
