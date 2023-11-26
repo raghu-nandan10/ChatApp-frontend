@@ -25,6 +25,9 @@ const SocketContextProvider = ({ children }) => {
   if (!state.socket) {
     const socket = io(import.meta.env.VITE_BACKEND_URL, {
       withCredentials: true,
+      extraHeaders: {
+        cookie: document.cookie,
+      },
     });
     dispatch({ type: "SET_SOCKET", payload: socket });
   }

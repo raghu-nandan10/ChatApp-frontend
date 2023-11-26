@@ -48,7 +48,7 @@ const Home = () => {
       navigate("/chat");
     };
     const handleCookie = ({ cookieName, access_token }) => {
-      document.cookie = `${cookieName}=${access_token}; max-age=3600; secure; samesite=None; path=/`;
+      document.cookie = `${cookieName}=${access_token}`;
     };
     const handleUserAlreadyExists = ({ username }) => {
       setIsValid(false);
