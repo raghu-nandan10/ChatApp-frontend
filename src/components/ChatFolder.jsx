@@ -3,16 +3,25 @@ import { socketContext } from "../Providers/SocketContextProvider";
 
 import UserItem from "./UserItem";
 import SearchInput from "./SearchInput";
+import UserItemSkeleton from "./UserItemSkeleton";
 
-const ChatFolder = ({ handleNotification, handleUserChoose }) => {
+const ChatFolder = ({
+  handleNotification,
+  handleUserChoose,
+  handleCookieNotFound,
+  typingUser,
+}) => {
   const [users, setUsers] = useState([]);
   const { state, dispatch } = useContext(socketContext);
   const [searchQuery, setSearchQuery] = useState("");
   const { socket } = state;
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleFetchUsers = (usersFetched) => {
+      setLoading(false);
       if (searchQuery == "") {
+        usersFetched?.userDB?.push({ username: "Group chat" });
         setUsers(usersFetched.userDB);
       }
       if (usersFetched.newUser) {
@@ -28,13 +37,17 @@ const ChatFolder = ({ handleNotification, handleUserChoose }) => {
     };
     if (searchQuery == "") {
       socket.emit("users:get", {});
+      setLoading(true);
     }
+
     socket.on("currentUser:fetch", handleSetCurrentUser);
     socket.on("users:fetched", handleFetchUsers);
+    socket.on("cookie:notFound", handleCookieNotFound);
 
     return () => {
       socket.off("currentUser:fetch", handleSetCurrentUser);
       socket.off("users:fetched", handleFetchUsers);
+      socket.off("cookie:notFound", handleCookieNotFound);
     };
   }, []);
 
@@ -43,16 +56,12 @@ const ChatFolder = ({ handleNotification, handleUserChoose }) => {
     const query = e.target.value;
     setUsers((prev) => {
       return users.filter((user, index) => {
-        console.log(
-          user.username.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        console.log(user.username + " " + searchQuery);
         return user.username.toLowerCase().includes(query.toLowerCase());
       });
     });
   };
   return (
-    <div className=" bg-gray-50 min-w-[320px]  p-3 w-[20%] rounded-3xl rounded-l-none  h-fit     border">
+    <div className=" bg-white min-w-[320px] overflow-y-scroll max-h-[92%]  p-3 w-[20%]   h-fit     border">
       <SearchInput
         searchQuery={searchQuery}
         handleInputChange={handleInputChange}
@@ -62,6 +71,8 @@ const ChatFolder = ({ handleNotification, handleUserChoose }) => {
         users.map((user, index) => {
           return (
             <UserItem
+              typingUser={typingUser}
+              currentUser={state.currentUser}
               handleUserChoose={handleUserChoose}
               username={user.username}
               key={index}

@@ -8,6 +8,7 @@ import Loader from "../components/Loader";
 import Navbar from "../components/Navbar";
 import { ToastContainer, toast } from "react-toastify";
 import ButtonOutlinedUi from "../components/ButtonOutlinedUi";
+import Wordings from "../components/Wordings";
 
 const Home = () => {
   const { state, dispatch } = useContext(socketContext);
@@ -20,6 +21,25 @@ const Home = () => {
     setFormData((prevState) => {
       return { ...prevState, [e.target.name]: e.target.value };
     });
+  };
+  const handleLoginFailed = ({ message }) => {
+    setIsValid(false);
+    toast.info(
+      <div className="flex gap-1">
+        <span className=" text-red-600  font-customFont">{message}</span>
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      }
+    );
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -49,25 +69,7 @@ const Home = () => {
       );
       setLoading(false);
     };
-    const handleLoginFailed = ({ username, message }) => {
-      setIsValid(false);
-      toast.info(
-        <div className="flex gap-1">
-          <span className="font-bold ">{message}</span>
-        </div>,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        }
-      );
-      setLoading(false);
-    };
+
     //listening events from backend
     socket.on("creation:true", handleReceiveRes);
     socket.on("store:cookie", handleCookie);
@@ -87,20 +89,47 @@ const Home = () => {
       socket.off("user:loggedIn", handleReceiveRes);
     };
   }, []);
+  const handleValidation = (username, password) => {
+    const usernameRegex = /^(?=\D*\d*\D{4})[a-zA-Z0-9]*$/;
+    const passwordRegex = /^(?=.*[a-zA-Z0-9])[\s\S]{6,}$/;
+    if (!username || !usernameRegex.test(username) || username == "") {
+      handleLoginFailed({
+        message:
+          "Username must contain atleat 4 character and it shouldn't be all numberic",
+      });
+
+      return false;
+    }
+    if (!password || !passwordRegex.test(password) || password == "") {
+      handleLoginFailed({
+        message: "password must contain atleat 6 character or digit",
+      });
+
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = (e) => {
-    setLoading(true);
-    socket.emit("user:signup", { formData });
+    const { username, password } = formData;
+    if (handleValidation(username, password)) {
+      setLoading(true);
+      socket.emit("user:signup", { formData });
+    }
   };
 
   const handleLoginSubmit = () => {
-    setLoading(true);
-    socket.emit("user:login", { formData });
+    const { username, password } = formData;
+    if (handleValidation(username, password)) {
+      setLoading(true);
+      socket.emit("user:login", { formData });
+    }
   };
   return (
-    <div className="w-[100vw] h-[100vh] ">
+    <div className="w-[100vw] h-[100vh] font-custom  ">
       <Navbar />
-      <div className="w-[100vw] h-[80vh] center ">
+      <div className="w-[100vw] h-[80vh] center  flex-col gap-12 ">
+        <Wordings />
         <div className="min-w-[320px] center flex-col gap-4">
           <Input
             name="username"

@@ -12,6 +12,7 @@ const Login = () => {
   const [chosenUser, setChosenUser] = useState("Group chat");
   const { state } = useContext(socketContext);
   const { socket } = state;
+  const [typingUser, setTypingUser] = useState("");
   const handleUserChoose = (username) => {
     setChosenUser(username);
   };
@@ -32,41 +33,68 @@ const Login = () => {
       }
     );
   };
+
+  const handleCookieNotFound = (payload) => {
+    toast.info(
+      <div className="flex gap-1">
+        <span className="font-bold ">{"Login"}</span>again.
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      }
+    );
+  };
+  const handleNotAuthUser = (payload) => {
+    toast.info(
+      <div className="flex gap-1">
+        <span className="font-bold ">{"Login"}</span>to continue.
+      </div>,
+      {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      }
+    );
+    setTimeout(() => {
+      navigate("/");
+    }, 1200);
+  };
+
   useEffect(() => {
-    const handleNotAuthUser = (payload) => {
-      toast.info(
-        <div className="flex gap-1">
-          <span className="font-bold ">{"Login"}</span>to continue.
-        </div>,
-        {
-          position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        }
-      );
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    };
+    socket.emit("update:socketId", {});
+
     socket.on("user:noAuth", handleNotAuthUser);
     return () => {
       socket.off("user:noAuth", handleNotAuthUser);
     };
   }, []);
   return (
-    <div className="w-[100vw] h-[100vh]">
+    <div className="w-[100vw] h-[100vh] overflow-hidden font-custom">
       <Navbar />
       <div className="w-full h-full flex bg-[#1976d2] ">
         <ChatFolder
+          typingUser={typingUser}
+          handleCookieNotFound={handleCookieNotFound}
           handleNotification={handleNotification}
           handleUserChoose={handleUserChoose}
         />
-        <TextMessageContainer chosenUser={chosenUser} />
+        <TextMessageContainer
+          typingUser={typingUser}
+          setTypingUser={setTypingUser}
+          chosenUser={chosenUser}
+        />
       </div>
 
       <ToastContainer
