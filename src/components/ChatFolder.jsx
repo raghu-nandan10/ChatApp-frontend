@@ -3,7 +3,6 @@ import { socketContext } from "../Providers/SocketContextProvider";
 
 import UserItem from "./UserItem";
 import SearchInput from "./SearchInput";
-import UserItemSkeleton from "./UserItemSkeleton";
 
 const ChatFolder = ({
   handleNotification,
